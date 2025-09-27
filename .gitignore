@@ -1,0 +1,6 @@
+.env
+app.log
+memory_orm.db
+草稿/
+__pycache__/
+full_turn_rag_db/
