@@ -1,12 +1,12 @@
 
 import requests
 import logging
-from config import ID,API_URL,IMAGE_PATH
+from config import API_URL,IMAGE_PATH
 import io
 import base64
 from typing import Generator,AsyncGenerator
 import asyncio
-async def send_request(question, image_path=IMAGE_PATH,image=None)-> AsyncGenerator[str, None]:
+async def send_request(question, ID='0042',image=None)-> AsyncGenerator[str, None]:
     """发送单轮请求到API服务"""
     # 构建请求数据（必传：question、session_id）
     data = {

@@ -5,7 +5,7 @@ import log.log
 from datetime import datetime
 import uuid
 from share import vector_db
-
+from datetime import datetime
 
 def date2timestamp(date):
     date_obj = datetime.fromisoformat(date)
@@ -69,6 +69,8 @@ def get_weather(location:str):
     output = {location : weather.get(location)}
     return json.dumps(output) 
 
+def get_time(time):
+    return json.dumps({'now':str(datetime.now())})
 
 def save_full_turn_dialog(user_id: str, dialog_data: dict) -> None:
     """

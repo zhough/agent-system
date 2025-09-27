@@ -72,6 +72,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
         )
         # 状态变量
         full_text = ""  # 拼接普通文本
+        res = ''
         is_function_call = False  # 是否检测到工具调用
         full_tool_call = []
         async def process_sync_stream():
@@ -143,6 +144,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
                         if function_name in function_map:
                             if function_name == 'send_request':
                                 argument['image'] = request.image_base64
+                                argument['ID'] = ID
                                 if request.image_base64 is not None:
                                     logging.info('接收到图像')
                                 #logging.info(f'函数调用的参数：{argument}')

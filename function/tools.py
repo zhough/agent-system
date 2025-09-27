@@ -1,4 +1,4 @@
-from .utils import get_weather
+from .utils import get_time
 from database.memory_database import database_operation
 from .chat import send_request
 import requests
@@ -8,17 +8,17 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "get_weather",
-            "description": "获取某个地点的天气，用户需要先提供地点.",
+            "name": "get_time",
+            "description": "获取当前时间.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "某个城市，比如广州",
-                    }
+                    'time':{
+                        'type':'string',
+                        "description": "占位用,固定传入字母a即可",
+                    },
                 },
-                "required": ["location"]
+                "required": ['time']
             },
         }
     },
@@ -127,7 +127,7 @@ tools = [
 
 
 function_map={
-    'get_weather':get_weather,
+    'get_time':get_time,
     'database_operation':database_operation,
     'send_request':send_request,
     'query_user_memory':query_user_memory,
