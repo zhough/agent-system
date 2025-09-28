@@ -71,7 +71,7 @@ tools = [
                 "properties": {
                     "question": {
                         "type": "string",
-                        "description": "向多模态大模型提出的文本要求，可以让它描述图像之类的",
+                        "description": "向多模态大模型提出的文本要求，可以让它描述图像之类的,对于皮肤病诊断,要求提供详细的病变描述和分析",
                     }
                 },
                 "required": ["question"]

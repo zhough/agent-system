@@ -4,14 +4,18 @@ from openai import OpenAI
 from function.tools import tools,function_map
 from function.utils import parse_json_robust,save_full_turn_dialog
 import logging
-from config import MAX_HISTORY_LENGTH,SYSTEM_PROMPT
+from config import Config
 from datetime import datetime   
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import Optional,AsyncGenerator,Dict,Any
+from typing import AsyncGenerator,Dict,Any
 import uvicorn
 from fastapi.responses import StreamingResponse
 import asyncio
+
+config = Config()
+system_prompt = config.system_prompt.copy()
+MAX_HISTORY_LENGTH = config.max_history_length
 
 app = FastAPI(title='皮肤病诊断agent接口')
 class QueryRequest(BaseModel):
@@ -31,7 +35,7 @@ client = OpenAI(
     base_url="https://api.deepseek.com",
 )
 
-system_prompt = SYSTEM_PROMPT.copy()
+
 all_messages = {}
 
 def get_user_messages(user_id:str) -> list[dict]:
