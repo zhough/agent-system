@@ -103,10 +103,12 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
                                     "arguments": current_tool.function.arguments  # 初始参数片段
                                 }
                             }) 
+
                         else:
                             # 拼接后续的参数片段
                             full_tool_call[i]["function"]["arguments"] += current_tool.function.arguments
-
+                            yield '\n'
+                            await asyncio.sleep(0)
                     #logging.info(f'测试点1:{full_tool_call}')                
 
                 # 普通文本处理（实时流式输出）
