@@ -8,9 +8,9 @@ from typing import Generator,AsyncGenerator
 import asyncio
 from .utils import logging_decorator
 import json
-
+import os
 config = Config()
-async def send_request(question, ID='0042',image=None)-> AsyncGenerator[str, None]:
+async def send_request(question, ID='0042',image=None,image1=None)-> AsyncGenerator[str, None]:
     """发送单轮请求到API服务"""
     # 构建请求数据（必传：question、session_id）
     data = {
@@ -22,6 +22,17 @@ async def send_request(question, ID='0042',image=None)-> AsyncGenerator[str, Non
         img_bytes = base64.b64decode(image)
         img_file_obj = io.BytesIO(img_bytes)
         files = {"image": img_file_obj}
+        if image1 is not None:
+            image1_path = image1
+            logging.info(f'image1_path: {image1_path}')
+            if os.path.exists(image1_path):
+                logging.info('打开image1成功')
+                with open(image1_path, 'rb') as f:
+                    img_bytes_from_file = f.read()
+                    img_file_obj_from_file = io.BytesIO(img_bytes_from_file)
+                    files['image1'] = img_file_obj_from_file 
+        else:
+            logging.info('image1加载失败')
     # 发送POST请求（stream=True保持流式响应）
     try:
         response = requests.post(

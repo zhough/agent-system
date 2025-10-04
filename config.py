@@ -4,7 +4,8 @@ class Config():
         self.vector_db_path = "./full_turn_rag_db"  # 向量库本地存储路径
         self.device = 'cpu'
         self.max_history_length = 30
-        self.api_url = "http://129.204.9.54:6888/chat"
+        self.base_path = './images'
+        self.api_url = "http://134.175.86.218:6888/chat"
         self.system_prompt = {"role": "system", "content": f"1. 你是皮肤病诊断助手，普通对话直接回答，需工具时调用函数，一次可以调用多个工具。"+\
      "2. 用户传入图像时调用多模态大模型工具"+\
      f"3. 首轮对话先读取用户的个人信息"+\

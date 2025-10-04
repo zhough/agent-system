@@ -12,6 +12,11 @@ from typing import AsyncGenerator,Dict,Any
 import uvicorn
 from fastapi.responses import StreamingResponse
 import asyncio
+import uuid
+import base64
+import io
+from PIL import Image
+from pathlib import Path
 
 config = Config()
 system_prompt = config.system_prompt.copy()
@@ -149,13 +154,24 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
 
                         if function_name in function_map:
                             if function_name == 'send_request':
+                                logging.info(f'多模态调用参数:{argument}')
                                 argument['image'] = request.image_base64
-                                argument['ID'] = ID
-                                if request.image_base64 is not None:
-                                    logging.info('接收到图像')
+                                argument['ID'] = ID   
                                 #logging.info(f'函数调用的参数：{argument}')
                                 sync_generator = function_map[function_name](**argument)
                                 full_tool_response = ""
+                                if request.image_base64 is not None:
+                                    logging.info('接收到图像')
+                                    name = f'{uuid.uuid4().hex}.png'
+                                    save_dir = os.path.join(config.base_path,ID)
+                                    save_dir1 = Path(save_dir)
+                                    save_dir1.mkdir(parents=True, exist_ok=True)
+                                    save_path = os.path.join(save_dir,name)
+                                    img_bytes = base64.b64decode(request.image_base64)
+                                    img_file_obj = io.BytesIO(img_bytes)
+                                    image_pil = Image.open(img_file_obj)
+                                    image_pil.save(save_path)
+                                    full_tool_response = f'图像已保存到:{save_path}'
                                 async for chunk in sync_generator:
                                     yield chunk
                                     full_tool_response += chunk

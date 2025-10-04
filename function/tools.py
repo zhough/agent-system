@@ -65,13 +65,18 @@ tools = [
         "type": "function",
         "function": {
             "name": "send_request",
-            "description": "调用多模态大模型，当用户输出的开头带<image>的时候证明传入图像，这时候请你先调用这个工具分析.",
+            "description": "1.调用多模态大模型，当用户输出的开头带<image>的时候证明传入图像，这时候请你先调用这个工具分析."+\
+            "2.请在数据库中记住图像保存的路径.\n 3.用户能看到多模态的输出,不必复述",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "question": {
                         "type": "string",
                         "description": "向多模态大模型提出的文本要求，可以让它描述图像之类的,对于皮肤病诊断,要求提供详细的病变描述和分析",
+                    },
+                    'image1':{
+                        'type':'string',
+                        'description': '如果需要两张图对比,传入被对比图的路径,如果没有要对比的图,不用传任何东西'
                     }
                 },
                 "required": ["question"]
