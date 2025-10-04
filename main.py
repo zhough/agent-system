@@ -171,7 +171,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
                                     img_file_obj = io.BytesIO(img_bytes)
                                     image_pil = Image.open(img_file_obj)
                                     image_pil.save(save_path)
-                                    full_tool_response = f'图像已保存到:{save_path}'
+                                    full_tool_response = f'请在数据库中记录图像路径:{save_path}\n'
                                 async for chunk in sync_generator:
                                     yield chunk
                                     full_tool_response += chunk
