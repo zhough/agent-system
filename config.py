@@ -1,8 +1,8 @@
-#import torch 
+import torch 
 class Config():
     def __init__(self):
         self.vector_db_path = "./full_turn_rag_db"  # 向量库本地存储路径
-        self.device = 'cuda'
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.max_history_length = 30
         self.base_path = './images'
         self.api_url = "http://193.112.118.246:6888/chat"

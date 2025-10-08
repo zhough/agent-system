@@ -17,12 +17,26 @@ import base64
 import io
 from PIL import Image
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
+
 
 config = Config()
 system_prompt = config.system_prompt.copy()
 MAX_HISTORY_LENGTH = config.max_history_length
 
 app = FastAPI(title='皮肤病诊断agent接口')
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有HTTP方法
+    allow_headers=["*"],  # 允许所有HTTP头
+)
+
 class QueryRequest(BaseModel):
     user_query: str  # 必须包含的参数
     ID : str = '0001'
