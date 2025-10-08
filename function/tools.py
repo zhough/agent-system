@@ -39,8 +39,8 @@ tools = [
                     },
                     "memory_type":{
                         'type':'string',
-                        'description':'记忆的类型',
-                        'enum':['FACT','PREFERENCE','EMOTION','TASK','IMPORTANT']
+                        'description':'记忆的类型,其中PATH专门用来存储图像路径',
+                        'enum':['FACT','PREFERENCE','EMOTION','TASK','IMPORTANT','PATH']
                     },
                     'operation_type':{
                         'type':'string',

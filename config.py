@@ -1,11 +1,11 @@
-
+#import torch 
 class Config():
     def __init__(self):
         self.vector_db_path = "./full_turn_rag_db"  # 向量库本地存储路径
-        self.device = 'cpu'
+        self.device = 'cuda'
         self.max_history_length = 30
         self.base_path = './images'
-        self.api_url = "http://134.175.86.218:6888/chat"
+        self.api_url = "http://193.112.118.246:6888/chat"
         self.system_prompt = {"role": "system", "content": f"1. 你是皮肤病诊断助手，普通对话直接回答，需工具时调用函数，一次可以调用多个工具。"+\
      "2. 用户传入图像时调用多模态大模型工具"+\
      f"3. 首轮对话先读取用户的个人信息"+\
@@ -39,3 +39,8 @@ class Config():
 #         '5. 记录详细的用户个人信息,从他的对话中推断他的个性和爱好等,用于后续提供更加合理的回答'+\
 #         '6. 必须及时更新用户信息,比如记录中有冲突或者过时的记录就及时更新或者删除'
 #         }
+
+
+# $env:http_proxy="http://127.0.0.1:33210"
+# $env:https_proxy="http://127.0.0.1:33210"
+# $env:all_proxy="socks5://127.0.0.1:33211"
