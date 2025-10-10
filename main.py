@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI,AsyncOpenAI 
 from function.tools import tools,function_map
 from function.utils import parse_json_robust,save_full_turn_dialog
 import logging
@@ -49,7 +49,7 @@ class LLMResponse(BaseModel):
 load_dotenv()
 
 
-client = OpenAI(
+client = AsyncOpenAI(
     api_key=os.getenv('DEEPSEEK_API_KEY'),
     base_url="https://api.deepseek.com",
 )
@@ -87,7 +87,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
 
     while True:
         # 发起流式请求
-        stream = client.chat.completions.create(
+        stream = await client.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
             tools=tools,
@@ -98,51 +98,51 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
         res = ''
         is_function_call = False  # 是否检测到工具调用
         full_tool_call = []
-        async def process_sync_stream():
-            nonlocal full_text, is_function_call, full_tool_call
-            # 逐块处理流式响应
-            for chunk in stream:
-                if not chunk.choices:
-                    continue
-                choice = chunk.choices[0]
-                delta = choice.delta
+        #async def process_sync_stream():
+        #nonlocal full_text, is_function_call, full_tool_call
+        # 逐块处理流式响应
+        async for chunk in stream:
+            if not chunk.choices:
+                continue
+            choice = chunk.choices[0]
+            delta = choice.delta
 
-                # 检测工具调用（一旦发现工具调用，后续内容均视为工具指令）
-                if hasattr(delta, "tool_calls") and delta.tool_calls:
-                    is_function_call = True
-                    #current_tool = delta.tool_calls[0]
-                    # 初始化或更新完整工具调用数据
-                    for i,current_tool in enumerate(delta.tool_calls):
-                        if not full_tool_call:
-                            full_tool_call.append({
-                                "id": current_tool.id,
-                                'type':current_tool.type,
-                                "function": {
-                                    "name": current_tool.function.name,
-                                    "arguments": current_tool.function.arguments  # 初始参数片段
-                                }
-                            }) 
+            # 检测工具调用（一旦发现工具调用，后续内容均视为工具指令）
+            if hasattr(delta, "tool_calls") and delta.tool_calls:
+                is_function_call = True
+                #current_tool = delta.tool_calls[0]
+                # 初始化或更新完整工具调用数据
+                for i,current_tool in enumerate(delta.tool_calls):
+                    if not full_tool_call:
+                        full_tool_call.append({
+                            "id": current_tool.id,
+                            'type':current_tool.type,
+                            "function": {
+                                "name": current_tool.function.name,
+                                "arguments": current_tool.function.arguments  # 初始参数片段
+                            }
+                        }) 
 
-                        else:
-                            # 拼接后续的参数片段
-                            full_tool_call[i]["function"]["arguments"] += current_tool.function.arguments
-                            yield '\n'
-                            await asyncio.sleep(0)
-                    #logging.info(f'测试点1:{full_tool_call}')                
+                    else:
+                        # 拼接后续的参数片段
+                        full_tool_call[i]["function"]["arguments"] += current_tool.function.arguments
+                        yield '\n'
+                        await asyncio.sleep(0)
+                #logging.info(f'测试点1:{full_tool_call}')                
 
-                # 普通文本处理（实时流式输出）
-                elif hasattr(delta, "content") and delta.content is not None and not is_function_call:
-                    print(delta.content, end="", flush=True)  # 实时打印
-                    yield delta.content
-                    full_text += delta.content
-                    await asyncio.sleep(0)
+            # 普通文本处理（实时流式输出）
+            elif hasattr(delta, "content") and delta.content is not None and not is_function_call:
+                print(delta.content, end="", flush=True)  # 实时打印
+                yield delta.content
+                full_text += delta.content
+                await asyncio.sleep(0)
 
-                # 响应结束判断
-                if choice.finish_reason in ["stop", "tool_calls"]:
-                    break
-        # 迭代处理同步流的结果（将同步生成器转为异步迭代）
-        async for chunk in process_sync_stream():
-            yield chunk  # 将处理后的文本片段发送给前端
+            # 响应结束判断
+            if choice.finish_reason in ["stop", "tool_calls"]:
+                break
+        # # 迭代处理同步流的结果（将同步生成器转为异步迭代）
+        # async for chunk in process_sync_stream():
+        #     yield chunk  # 将处理后的文本片段发送给前端
         # 3. 助手消息入队
         assistant_msg = {"role": "assistant", "content": full_text}
 

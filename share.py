@@ -5,14 +5,16 @@ from config import Config
 import os   
 
 config = Config()
-
+#os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 embedding_model = HuggingFaceEmbeddings(
     model_name="all-MiniLM-L6-v2",  # 轻量768维模型
     model_kwargs={"device": config.device} 
 )
 logging.info('成功加载word2vec模型')
 
-
+if not os.path.exists(config.vector_db_path):
+    os.makedirs(config.vector_db_path)
+    
 vector_db = Chroma(
     persist_directory=config.vector_db_path,  # 数据存储路径
     embedding_function=embedding_model,  # 绑定向量化模型
