@@ -5,3 +5,4 @@ memory_orm.db
 __pycache__/
 full_turn_rag_db/
 images/
+local_models/
