@@ -12,7 +12,6 @@ import os
 config = Config()
 async def send_request(question, ID='0042',image=None,image1=None)-> AsyncGenerator[str, None]:
     """发送单轮请求到API服务"""
-    # 构建请求数据（必传：question、session_id）
     data = {
         "question": question.strip(),
         "session_id": ID
