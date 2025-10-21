@@ -1,6 +1,7 @@
 import torch
 from modelscope import Qwen3VLForConditionalGeneration, AutoProcessor
-
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 # --------------------------
 # 1. 加载模型和处理器（已确保无报错）
 # --------------------------
@@ -9,9 +10,9 @@ model_name = "unsloth/Qwen3-VL-4B-Instruct-bnb-4bit"
 
 # 加载模型（4bit量化，自动分配到GPU）
 model = Qwen3VLForConditionalGeneration.from_pretrained("unsloth/Qwen3-VL-4B-Instruct-bnb-4bit",
-                                                        dtype="auto",device_map='auto')
+                                                        dtype=torch.float16,device_map='cuda')
 
-
+torch.cuda.empty_cache()
 # 加载处理器（处理图像和文本输入）
 processor = AutoProcessor.from_pretrained(
     model_name
