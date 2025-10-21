@@ -4,8 +4,9 @@ import logging
 from PIL import Image
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
-from modelscope import Qwen3VLForConditionalGeneration, AutoProcessor
-from threading import Thread
+from transformers import TextIteratorStreamer  # 关键：使用和InternVL一样的流式工具
+from modelscope import Qwen3VLForConditionalGeneration,AutoProcessor
+from threading import Thread  # 参考InternVL的多线程处理
 import uvicorn
 
 # 配置日志
@@ -13,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 初始化FastAPI应用
-app = FastAPI(title="Qwen-VL API服务")
+app = FastAPI(title="Qwen-VL API服务（参考InternVL流式实现）")
 
 # --------------------------
 # 模型加载（Qwen-VL 4bit量化版）
@@ -21,18 +22,16 @@ app = FastAPI(title="Qwen-VL API服务")
 model_name = "unsloth/Qwen3-VL-4B-Instruct-bnb-4bit"
 try:
     logger.info("开始加载Qwen-VL模型...")
-    # 加载处理器（处理图像和文本输入）
     processor = AutoProcessor.from_pretrained(
         model_name,
-        image_size=(512, 512)  # 降低图像分辨率，减少显存占用
+        image_size=(512, 512)
     )
-    # 加载模型（4bit量化，GPU部署）
     model = Qwen3VLForConditionalGeneration.from_pretrained(
         model_name,
         dtype=torch.float16,
-        device_map="cuda"
+        device_map="cuda",
+        load_in_4bit=True
     )
-    # 确保tokenizer有pad标记
     if processor.tokenizer.pad_token is None:
         processor.tokenizer.pad_token = processor.tokenizer.eos_token
     logger.info("Qwen-VL模型加载完成")
@@ -41,16 +40,14 @@ except Exception as e:
     raise
 
 # --------------------------
-# 图像处理（适配Qwen-VL输入格式）
+# 图像处理（与InternVL对齐，简化版）
 # --------------------------
 def process_images(image_files):
-    """处理上传的图像文件，转换为Qwen-VL可接受的格式"""
     images = []
     for file in image_files:
         if file is None:
             continue
         try:
-            # 读取图像字节并转换为PIL Image
             image_bytes = file.file.read()
             image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
             images.append(image)
@@ -61,23 +58,22 @@ def process_images(image_files):
     return images
 
 # --------------------------
-# 生成响应（流式输出）
+# 流式生成核心逻辑（完全参考InternVL的streamer+线程模式）
 # --------------------------
 def generate_stream(question, images):
-    """生成流式响应的核心函数"""
+    """参考InternVL的TextIteratorStreamer实现，直接返回增量文本"""
     try:
-        # 构建Qwen-VL要求的输入格式（messages列表）
+        # 1. 构建Qwen-VL输入（messages格式）
         messages = [
             {
                 "role": "user",
                 "content": [{"type": "text", "text": question}]
             }
         ]
-        # 添加图像到输入（按顺序插入）
         for i, img in enumerate(images):
             messages[0]["content"].insert(i, {"type": "image", "image": img})
 
-        # 转换为模型输入张量
+        # 2. 转换为模型输入张量
         inputs = processor.apply_chat_template(
             messages,
             tokenize=True,
@@ -86,41 +82,35 @@ def generate_stream(question, images):
             return_tensors="pt"
         ).to(model.device)
 
-        # 流式生成（循环生成单个token）
-        generated_tokens = []
-        max_new_tokens = 512
-        eos_token_id = processor.tokenizer.eos_token_id
+        # 3. 初始化TextIteratorStreamer（与InternVL完全一致）
+        streamer = TextIteratorStreamer(
+            processor.tokenizer,
+            skip_prompt=True,  # 跳过提示词部分（只返回生成的回答）
+            skip_special_tokens=True,  # 跳过特殊token（如<|end|>）
+            timeout=30  # 超时时间
+        )
 
-        for _ in range(max_new_tokens):
-            # 每次生成1个token
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=1,
-                do_sample=True,
-                temperature=0.7,
-                top_p=0.9,
-                pad_token_id=processor.tokenizer.pad_token_id,
-                eos_token_id=eos_token_id
-            )
+        # 4. 生成配置（参考InternVL，关闭do_sample提高稳定性）
+        generation_config = {
+            "max_new_tokens": 512,
+            "do_sample": False,  # 与InternVL一致，关闭采样避免重复
+            "pad_token_id": processor.tokenizer.pad_token_id,
+            "eos_token_id": processor.tokenizer.eos_token_id,
+            "streamer": streamer  # 关键：将streamer传入生成配置
+        }
 
-            # 提取新生成的token
-            new_token = outputs[0, -1].item()
-            if new_token == eos_token_id:
-                break  # 遇到结束符停止
-            generated_tokens.append(new_token)
+        # 5. 多线程生成（参考InternVL的线程模式，避免阻塞）
+        def generate_task():
+            model.generate(** inputs, **generation_config)
 
-            # 解码当前片段并返回
-            current_text = processor.batch_decode(
-                [generated_tokens],
-                skip_special_tokens=True
-            )[0]
-            yield current_text
+        thread = Thread(target=generate_task)
+        thread.start()
 
-            # 更新输入（包含历史token）
-            inputs = {
-                "input_ids": outputs,
-                "attention_mask": torch.ones_like(outputs)
-            }
+        # 6. 从streamer获取增量文本（核心：每次只返回新增片段）
+        for new_text in streamer:
+            yield new_text  # 直接返回增量，无累积重复
+
+        thread.join()
 
     except Exception as e:
         error_msg = f"推理失败: {str(e)}"
@@ -128,32 +118,24 @@ def generate_stream(question, images):
         yield f"\n⚠️  {error_msg}"
 
 # --------------------------
-# API接口定义（与原InternVL格式兼容）
+# API接口（与InternVL的/chat接口参数完全对齐）
 # --------------------------
 @app.post("/chat")
 async def chat(
-    question: str = Form(...),  # 必传：文本问题
-    session_id: str = Form("default"),  # 保留参数，兼容原格式（无实际作用）
-    image: UploadFile = File(None),  # 可选：第一张图像
-    image1: UploadFile = File(None)  # 可选：第二张图像
+    question: str = Form(...),
+    session_id: str = Form("default"),  # 保留参数，兼容InternVL
+    image: UploadFile = File(None),
+    image1: UploadFile = File(None)
 ):
-    """Qwen-VL多模态推理接口（单轮，无历史）"""
     logger.info(f"收到请求 - session_id: {session_id}, 问题: {question[:50]}...")
-
-    # 1. 处理图像（收集非空图像）
     images = process_images([image, image1])
     logger.info(f"共处理 {len(images)} 张图像")
 
-    # 2. 定义流式响应生成器
-    def response_generator():
-        yield from generate_stream(question, images)
-
-    # 3. 返回流式响应
-    return StreamingResponse(response_generator(), media_type="text/plain")
+    # 直接返回streamer的增量文本生成器（与InternVL逻辑一致）
+    return StreamingResponse(generate_stream(question, images), media_type="text/plain")
 
 # --------------------------
 # 启动服务
 # --------------------------
 if __name__ == "__main__":
-    # 单进程启动（模型不支持多进程共享）
-    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=6888, workers=1, log_level="info")
