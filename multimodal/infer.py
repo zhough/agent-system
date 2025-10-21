@@ -9,7 +9,7 @@ model_name = "unsloth/Qwen3-VL-4B-Instruct-bnb-4bit"
 
 # 加载模型（4bit量化，自动分配到GPU）
 model = Qwen3VLForConditionalGeneration.from_pretrained("unsloth/Qwen3-VL-4B-Instruct-bnb-4bit",
-                                                        dtype="auto",device_map='cuda')
+                                                        dtype="auto",device_map='auto')
 
 
 # 加载处理器（处理图像和文本输入）
