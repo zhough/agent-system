@@ -29,8 +29,7 @@ try:
     model = Qwen3VLForConditionalGeneration.from_pretrained(
         model_name,
         dtype=torch.float16,
-        device_map="cuda",
-        load_in_4bit=True
+        device_map="cuda"
     )
     if processor.tokenizer.pad_token is None:
         processor.tokenizer.pad_token = processor.tokenizer.eos_token
@@ -138,4 +137,4 @@ async def chat(
 # 启动服务
 # --------------------------
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=6888, workers=1, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, log_level="info")
