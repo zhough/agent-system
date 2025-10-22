@@ -3,10 +3,11 @@ import asyncio
 
 # 配置：路径前缀 -> 目标端口（根据你的应用修改）
 # 三个应用的路径映射，避免冲突
+# 正确的PATH_TO_PORT配置（重点改第一个应用的映射）
 PATH_TO_PORT = {
-    "/streamlit": 8501,  # Streamlit应用（需WebSocket支持）
-    "/api": 5000,        # 第二个应用（SSE流，text/event-stream）
-    "/chat": 8080        # 第一个应用（StreamingResponse，text/plain）
+    "/app1": 8080,   # 第一个应用：前缀为/app1，转发到8080端口
+    "/api": 5000,    # 第二个应用：前缀为/api，转发到5000端口
+    "/streamlit": 8501  # Streamlit：前缀为/streamlit，转发到8501端口
 }
 
 async def handle_http(request):
