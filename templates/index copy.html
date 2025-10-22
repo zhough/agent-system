@@ -7,7 +7,7 @@
     <!-- 引入现代无衬线字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 基础样式 */
+        /* 基础样式：优化字体排版 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,7 +17,7 @@
         body {
             background-color: #f8f9fa;
             color: #2d3436;
-            line-height: 1.65;
+            line-height: 1.65;  /* 优化行高，提升可读性 */
             font-size: 16px;
         }
         .container {
@@ -25,7 +25,7 @@
             margin: 0 auto;
             padding: 20px;
             display: grid;
-            grid-template-columns: 1fr 380px;
+            grid-template-columns: 1fr 380px;  /* 右侧输入区稍宽，提升体验 */
             gap: 24px;
             height: 100vh;
         }
@@ -66,36 +66,12 @@
             color: #2d3436;
         }
         .message-content {
-            padding: 16px 20px;
+            padding: 14px 18px;
             border-radius: 18px;
             word-wrap: break-word;
             font-size: 15px;
-            white-space: pre-wrap; /* 保留换行，兼容Markdown解析 */
+            white-space: pre-wrap; 
         }
-        /* Markdown格式化样式 */
-        .message-content h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 14px 0 8px 0;
-            color: inherit; /* 继承父容器颜色（用户消息为白色，助手为深色） */
-        }
-        .message-content ul {
-            margin: 10px 0 10px 24px;
-            padding-left: 8px;
-        }
-        .message-content li {
-            margin: 6px 0;
-            line-height: 1.6;
-        }
-        .message-content hr {
-            border: none;
-            border-top: 1px solid #e2e8f0;
-            margin: 18px 0;
-        }
-        .message-content strong {
-            font-weight: 600;
-        }
-        /* 消息附加元素 */
         .message-image {
             margin-top: 12px;
             max-width: 320px;
@@ -256,7 +232,7 @@
         <!-- 历史消息区域 -->
         <div class="history-container" id="history">
             <div class="message assistant-message">
-                <div class="message-content">您好！请输入您的ID、问题，或上传图片进行诊断。上传图片时会自动添加&lt;image&gt;标记，结果将以格式化方式显示。</div>
+                <div class="message-content">您好！请输入您的ID、问题，或上传图片进行诊断。上传图片时会自动添加&lt;image&gt;标记。</div>
             </div>
         </div>
 
@@ -285,31 +261,6 @@
     </div>
 
     <script>
-        // Markdown转HTML解析函数（支持标题、列表、分隔线、加粗）
-        function markdownToHtml(markdown) {
-            // 转换三级标题（### 标题 → <h3>标题</h3>）
-            markdown = markdown.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
-            
-            // 转换无序列表（- 内容 → <li>内容</li>，并包裹<ul>）
-            // 先处理列表项
-            let html = markdown.replace(/^- (.*?)$/gm, '<li>$1</li>');
-            // 再用<ul>包裹连续的列表项
-            html = html.replace(/(<li>.*?<\/li>)+/gs, (match) => {
-                return `<ul>${match}</ul>`;
-            });
-            
-            // 转换分隔线（--- → <hr>）
-            html = html.replace(/^---$/gm, '<hr>');
-            
-            // 转换加粗（**内容** → <strong>内容</strong>）
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // 处理空行（避免多余空白）
-            html = html.replace(/\n{3,}/g, '\n\n'); // 最多保留两个连续换行
-            
-            return html;
-        }
-
         // 图像上传预览
         const uploadArea = document.getElementById('upload-area');
         const imageUpload = document.getElementById('image-upload');
@@ -425,8 +376,7 @@
                     const { done, value } = await reader.read();
                     if (done) break;
                     result += decoder.decode(value, { stream: true });
-                    // 转换Markdown为HTML并显示
-                    contentDiv.innerHTML = markdownToHtml(result);
+                    contentDiv.textContent = result;
                     history.scrollTop = history.scrollHeight;
                 }
 
