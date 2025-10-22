@@ -91,8 +91,8 @@ def generate_stream(question, images):
 
         # 4. 生成配置（参考InternVL，关闭do_sample提高稳定性）
         generation_config = {
-            "max_new_tokens": 512,
-            "do_sample": False,  # 与InternVL一致，关闭采样避免重复
+            "max_new_tokens": 1024,
+            "do_sample": False,
             "pad_token_id": processor.tokenizer.pad_token_id,
             "eos_token_id": processor.tokenizer.eos_token_id,
             "streamer": streamer  # 关键：将streamer传入生成配置
