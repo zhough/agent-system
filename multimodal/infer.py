@@ -39,7 +39,7 @@ except Exception as e:
     raise
 
 # --------------------------
-# 图像处理（与InternVL对齐，简化版）
+# 图像处理
 # --------------------------
 def process_images(image_files):
     images = []
@@ -57,10 +57,9 @@ def process_images(image_files):
     return images
 
 # --------------------------
-# 流式生成核心逻辑（完全参考InternVL的streamer+线程模式）
+# 流式生成核心逻辑
 # --------------------------
 def generate_stream(question, images):
-    """参考InternVL的TextIteratorStreamer实现，直接返回增量文本"""
     try:
         # 1. 构建Qwen-VL输入（messages格式）
         messages = [
@@ -81,31 +80,31 @@ def generate_stream(question, images):
             return_tensors="pt"
         ).to(model.device)
 
-        # 3. 初始化TextIteratorStreamer（与InternVL完全一致）
+        # 3. 初始化TextIteratorStreamer
         streamer = TextIteratorStreamer(
             processor.tokenizer,
-            skip_prompt=True,  # 跳过提示词部分（只返回生成的回答）
-            skip_special_tokens=True,  # 跳过特殊token（如<|end|>）
+            skip_prompt=True,  # 跳过提示词部分
+            skip_special_tokens=True,
             timeout=30  # 超时时间
         )
 
-        # 4. 生成配置（参考InternVL，关闭do_sample提高稳定性）
+        # 4. 生成配置
         generation_config = {
             "max_new_tokens": 1024,
             "do_sample": False,
             "pad_token_id": processor.tokenizer.pad_token_id,
             "eos_token_id": processor.tokenizer.eos_token_id,
-            "streamer": streamer  # 关键：将streamer传入生成配置
+            "streamer": streamer
         }
 
-        # 5. 多线程生成（参考InternVL的线程模式，避免阻塞）
+        # 5. 多线程生成
         def generate_task():
             model.generate(** inputs, **generation_config)
 
         thread = Thread(target=generate_task)
         thread.start()
 
-        # 6. 从streamer获取增量文本（核心：每次只返回新增片段）
+        # 6. 从streamer获取增量文本
         for new_text in streamer:
             yield new_text  # 直接返回增量，无累积重复
 
@@ -117,7 +116,7 @@ def generate_stream(question, images):
         yield f"\n⚠️  {error_msg}"
 
 # --------------------------
-# API接口（与InternVL的/chat接口参数完全对齐）
+# API接口
 # --------------------------
 @app.post("/chat")
 async def chat(
