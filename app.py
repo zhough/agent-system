@@ -59,6 +59,7 @@ if st.session_state.is_streaming:
     # 创建流式占位符（固定在历史消息下方）
     stream_placeholder = st.empty()
     url = "http://127.0.0.1:5000/generate"
+    #url = 'http://172.30.154.81:5000/generate'
     payload = {"user_query": latest_user_query, "ID": st.session_state.user_id}
     # 如果有上传的图片，转为 Base64 传到后端
     if st.session_state.uploaded_image:

@@ -43,3 +43,8 @@ vector_db = Chroma(
 
 if not os.path.exists(config.base_path):
     os.makedirs(config.base_path)
+
+
+# eval "$(ssh-agent -s)"
+# ssh-add ~/zhou/.ssh/id_ed25519
+# ssh-add -l
