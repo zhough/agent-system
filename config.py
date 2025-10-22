@@ -5,7 +5,7 @@ class Config():
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.max_history_length = 30
         self.base_path = './images'
-        self.api_url = "http://172.30.154.81:8000/chat"
+        self.api_url = "http://localhost:8000/chat"
         self.system_prompt = {"role": "system", "content": "1. 你是皮肤病诊断助手，普通对话直接回答，需工具时调用函数，一次可以调用多个工具。"+\
      "2. 用户传入图像时调用多模态大模型工具"+\
      "3. 首轮对话先读取用户的个人信息"+\
@@ -19,7 +19,7 @@ class Config():
         '10. 调用多模态大模型时只要求它进行视觉描述,你根据视觉描述和你的知识分析而不是套用多模态模型分析结果'
         }
 
-	
+
 
 
 # VECTOR_DB_PATH = "./full_turn_rag_db"  # 向量库本地存储路径
