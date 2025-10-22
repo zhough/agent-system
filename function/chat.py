@@ -35,7 +35,7 @@ async def send_request(question, ID='0042',image=None,image1=None)-> AsyncGenera
     # 发送POST请求（stream=True保持流式响应）
     try:
         response = requests.post(
-            config.api_url,
+            config.multimodal_url,
             data=data,
             files=files,
             stream=True,

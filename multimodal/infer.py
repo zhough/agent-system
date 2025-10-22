@@ -8,14 +8,14 @@ from transformers import TextIteratorStreamer  # 关键：使用和InternVL一�
 from modelscope import Qwen3VLForConditionalGeneration,AutoProcessor
 from threading import Thread  # 参考InternVL的多线程处理
 import uvicorn
-
+from config import Config
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 初始化FastAPI应用
 app = FastAPI(title="Qwen-VL API服务（参考InternVL流式实现）")
-
+config = Config()
 # --------------------------
 # 模型加载（Qwen-VL 4bit量化版）
 # --------------------------
@@ -136,4 +136,4 @@ async def chat(
 # 启动服务
 # --------------------------
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080, workers=1, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=config.multimodal_port, workers=1, log_level="info")

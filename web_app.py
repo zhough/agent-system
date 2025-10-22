@@ -6,7 +6,9 @@ import io
 import base64
 import logging
 from aiohttp import ClientSession
+from config import Config
 
+config = Config()
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,8 +18,8 @@ app = FastAPI(title="皮肤病诊断Web应用")
 templates = Jinja2Templates(directory="templates")
 
 # 5000端口agent的地址
-AGENT_URL = "http://127.0.0.1:5000/generate"
-
+#AGENT_URL = "http://127.0.0.1:5000/generate"
+AGENT_URL = config.main_url
 
 # 1. 首页路由（显示Web界面）
 @app.get("/", response_class=HTMLResponse)
@@ -92,4 +94,4 @@ async def stream(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8501, log_level="info")
+    uvicorn.run(app, host="127.0.0.1", port=config.web_port, log_level="info")

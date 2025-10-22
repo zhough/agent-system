@@ -1,7 +1,8 @@
 import requests
 import streamlit as st
 import base64
-
+from config import Config
+config = Config()
 # 1. 初始化Session State（新增image_used跟踪图像是否已使用）
 if "uploaded_image" not in st.session_state:
     st.session_state.uploaded_image = None
@@ -64,8 +65,8 @@ for msg in st.session_state.messages:
 if st.session_state.is_streaming:
     latest_user_query = st.session_state.messages[-1]["content"]
     stream_placeholder = st.empty()
-    url = "http://127.0.0.1:5000/generate"
-    #url = 'http://172.30.154.81:8000/api/generate'
+    #url = "http://127.0.0.1:5000/generate"
+    url = config.main_url
     payload = {"user_query": latest_user_query, "ID": st.session_state.user_id}
     
     # 若有图像，携带Base64（即使已使用，仍传给后端但不加<image>标记）

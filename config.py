@@ -5,7 +5,12 @@ class Config():
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.max_history_length = 30
         self.base_path = './images'
-        self.api_url = "http://localhost:8080/chat"
+        self.multimodal_url = "http://localhost:8080/chat"
+        self.main_url = "http://127.0.0.1:5000/generate"
+        self.multimodal_port = 8080
+        self.main_port = 5000
+        self.web_port = 8051
+        self.proxy_port = 8000
         self.system_prompt = {"role": "system", "content": "1. 你是皮肤病诊断助手，普通对话直接回答，需工具时调用函数，一次可以调用多个工具。"+\
      "2. 用户传入图像时调用多模态大模型工具"+\
      "3. 首轮对话先读取用户的个人信息"+\
