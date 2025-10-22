@@ -2,9 +2,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import requests
 
 ROUTES = {
-    "/main": "http://127.0.0.1:5000",
+    "/main": "http://127.0.0.1:5000/generate",
     "/app": "http://127.0.0.1:8501",
-    "/multimodal": "http://127.0.0.1:8080"
+    "/multimodal": "http://127.0.0.1:8080/chat"
 }
 
 class ProxyHandler(BaseHTTPRequestHandler):
