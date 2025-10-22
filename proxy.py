@@ -7,7 +7,7 @@ import asyncio
 PATH_TO_PORT = {
     "/app1": 8080,   # 第一个应用：前缀为/app1，转发到8080端口
     "/api": 5000,    # 第二个应用：前缀为/api，转发到5000端口
-    "/streamlit": 8501  # Streamlit：前缀为/streamlit，转发到8501端口
+    "/webapp": 8501  # Streamlit：前缀为/streamlit，转发到8501端口
 }
 
 async def handle_http(request):

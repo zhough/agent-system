@@ -65,6 +65,7 @@ if st.session_state.is_streaming:
     latest_user_query = st.session_state.messages[-1]["content"]
     stream_placeholder = st.empty()
     url = "http://127.0.0.1:5000/generate"
+    #url = 'http://172.30.154.81:8000/api/generate'
     payload = {"user_query": latest_user_query, "ID": st.session_state.user_id}
     
     # 若有图像，携带Base64（即使已使用，仍传给后端但不加<image>标记）
