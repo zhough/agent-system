@@ -126,7 +126,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
                     else:
                         # 拼接后续的参数片段
                         full_tool_call[i]["function"]["arguments"] += current_tool.function.arguments
-                        yield '\n'
+                        #yield '\n'
                         await asyncio.sleep(0)
                 #logging.info(f'测试点1:{full_tool_call}')                
 
