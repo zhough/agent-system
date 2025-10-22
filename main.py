@@ -239,4 +239,4 @@ if __name__ == "__main__":
     #         break
     #     stream_chat(user_input)
     #     print("\n" + "-"*50)
-    uvicorn.run(app, host="0.0.0.0", port=8080, workers=1)
+    uvicorn.run(app, host="0.0.0.0", port=5000, workers=1)
