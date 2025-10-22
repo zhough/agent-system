@@ -5,9 +5,9 @@ import asyncio
 # 三个应用的路径映射，避免冲突
 # 正确的PATH_TO_PORT配置（重点改第一个应用的映射）
 PATH_TO_PORT = {
-    "/app1": 8080,   # 第一个应用：前缀为/app1，转发到8080端口
+    "/multimodal": 8080,   # 第一个应用：前缀为/multimodal，转发到8080端口
     "/api": 5000,    # 第二个应用：前缀为/api，转发到5000端口
-    "/webapp": 8501  # Streamlit：前缀为/streamlit，转发到8501端口
+    "/webapp": 8501  # Streamlit：前缀为/webapp，转发到8501端口
 }
 
 async def handle_http(request):
