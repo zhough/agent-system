@@ -222,7 +222,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
 @app.post("/generate", response_model=str, description="调用LLM生成文本")
 async def stream_chat(request: QueryRequest):
     """
-    流式响应的入口。它不处理业务逻辑，而是返回一个 StreamingResponse。
+    流式响应的入口。返回一个 StreamingResponse。
     StreamingResponse 的内容由 generate_chat_stream 生成器提供。
     """
     return StreamingResponse(
