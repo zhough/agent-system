@@ -155,6 +155,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
         # 4. 处理工具调用
         if is_function_call and full_tool_call:
             print("\n[检测到工具调用，开始执行...]")
+            yield '\n'
             #logging.info('开始调用工具')
             try:
                 for i in range(len(full_tool_call)):
