@@ -1,7 +1,7 @@
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 import logging
-from config import Config
+from ..config import Config
 import os   
 from modelscope.hub.snapshot_download import snapshot_download
 from huggingface_hub import snapshot_download as hf_snapshot_download
