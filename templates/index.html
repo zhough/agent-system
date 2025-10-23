@@ -65,33 +65,33 @@
             color: #2d3436;
         }
         .message-content {
-            padding: 14px 18px;  /* 减少内边距 */
+            padding: 10px 18px;  /* 减少内边距 */
             border-radius: 18px;
             word-wrap: break-word;
             font-size: 15px;
             white-space: pre-wrap; /* 保留必要换行 */
-            line-height: 1.5;  /* 内容行高紧凑 */
+            line-height: 1.4;  /* 内容行高紧凑 */
         }
 
         /* Markdown格式化样式（紧凑版） */
         .message-content h3 {
             font-size: 16px;
             font-weight: 600;
-            margin: 8px 0 6px 0;  /* 大幅减少标题上下间距 */
+            margin: 4px 0 2px 0;  /* 大幅减少标题上下间距 */
             color: inherit;
         }
         .message-content ul {
-            margin: 6px 0 6px 22px;  /* 减少列表上下间距 */
+            margin: 3px 0 3px 22px;  /* 减少列表上下间距 */
             padding-left: 6px;
         }
         .message-content li {
-            margin: 4px 0;  /* 列表项间距紧凑 */
-            line-height: 1.5;
+            margin: 2px 0;  /* 列表项间距紧凑 */
+            line-height: 1.4;
         }
         .message-content hr {
             border: none;
             border-top: 1px solid #e2e8f0;
-            margin: 10px 0;  /* 分隔线上下间距减少 */
+            margin: 5px 0;  /* 分隔线上下间距减少 */
         }
         .message-content strong {
             font-weight: 600;
@@ -100,7 +100,7 @@
         /* 消息附加元素 */
         .message-image {
             margin-top: 10px;  /* 图片与文本间距减少 */
-            max-width: 320px;
+            max-width: 160px;
             border-radius: 8px;
             border: 1px solid #eee;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -289,24 +289,32 @@
     <script>
         // 优化的Markdown转HTML函数（压缩连续换行）
         function markdownToHtml(markdown) {
-            // 核心：将3个及以上连续换行压缩为2个（仅保留1个空行视觉效果）
-            markdown = markdown.replace(/\n{3,}/g, '\n\n');
+            // 1. 先压缩所有多余换行：
+            // - 3个及以上换行 → 1个换行（仅保留最小视觉间隔）
+            // - 2个换行 → 1个换行（避免空行）
+            markdown = markdown.replace(/\n{2,}/g, '\n');
             
-            // 转换三级标题
-            markdown = markdown.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+            // 2. 处理Markdown语法前，先将“单个换行”转为<br>（避免浏览器解析为空行）
+            // 注意：必须在处理标题、列表等语法之前执行，防止破坏语法结构
+            markdown = markdown.replace(/\n/g, '<br>');
             
-            // 转换无序列表
-            let html = markdown.replace(/^- (.*?)$/gm, '<li>$1</li>');
-            html = html.replace(/(<li>.*?<\/li>)+/gs, '<ul>$&</ul>');
+            // 3. 转换三级标题（需用<br>分割，避免与内容粘连）
+            markdown = markdown.replace(/^### (.*?)<br>/gm, '<h3>$1</h3><br>');
+            markdown = markdown.replace(/^## (.*?)<br>/gm, '<h2>$1</h2><br>');
+            // 4. 转换无序列表（先匹配列表项，再包裹成<ul>）
+            // 匹配“- 内容<br>”格式的列表项，避免与普通文本混淆
+            let html = markdown.replace(/^- (.*?)<br>/gm, '<li>$1</li>');
+            // 将连续的<li>标签包裹成<ul>，并在前后加<br>控制间距
+            html = html.replace(/(<li>.*?<\/li>)+/gs, '<br><ul>$&</ul><br>');
             
-            // 转换分隔线
-            html = html.replace(/^---$/gm, '<hr>');
+            // 5. 转换分隔线（前后加<br>，避免与内容粘连）
+            html = html.replace(/^---<br>/gm, '<br><hr><br>');
             
-            // 转换加粗
+            // 6. 转换加粗（不改变间距）
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
-            // 移除首尾多余空行
-            html = html.trim();
+            // 7. 移除首尾多余的<br>和空格（避免顶部/底部空行）
+            html = html.trim().replace(/^<br>+|<br>+$/g, '');
             
             return html;
         }

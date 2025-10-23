@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>皮肤病诊断助手</title>
-    <!-- 引入现代无衬线字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 基础样式：优化字体排版 */
+        /* 基础样式 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,7 +16,7 @@
         body {
             background-color: #f8f9fa;
             color: #2d3436;
-            line-height: 1.65;  /* 优化行高，提升可读性 */
+            line-height: 1.5;  /* 降低整体行高，减少空白 */
             font-size: 16px;
         }
         .container {
@@ -25,7 +24,7 @@
             margin: 0 auto;
             padding: 20px;
             display: grid;
-            grid-template-columns: 1fr 380px;  /* 右侧输入区稍宽，提升体验 */
+            grid-template-columns: 1fr 380px;
             gap: 24px;
             height: 100vh;
         }
@@ -46,7 +45,7 @@
             border-radius: 3px;
         }
         .message {
-            margin-bottom: 24px;
+            margin-bottom: 20px;  /* 减少消息之间的间距 */
             max-width: 85%;
             animation: fadeIn 0.3s ease;
         }
@@ -66,14 +65,41 @@
             color: #2d3436;
         }
         .message-content {
-            padding: 14px 18px;
+            padding: 14px 18px;  /* 减少内边距 */
             border-radius: 18px;
             word-wrap: break-word;
             font-size: 15px;
-            white-space: pre-wrap; 
+            white-space: pre-wrap; /* 保留必要换行 */
+            line-height: 1.5;  /* 内容行高紧凑 */
         }
+
+        /* Markdown格式化样式（紧凑版） */
+        .message-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 8px 0 6px 0;  /* 大幅减少标题上下间距 */
+            color: inherit;
+        }
+        .message-content ul {
+            margin: 6px 0 6px 22px;  /* 减少列表上下间距 */
+            padding-left: 6px;
+        }
+        .message-content li {
+            margin: 4px 0;  /* 列表项间距紧凑 */
+            line-height: 1.5;
+        }
+        .message-content hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 10px 0;  /* 分隔线上下间距减少 */
+        }
+        .message-content strong {
+            font-weight: 600;
+        }
+
+        /* 消息附加元素 */
         .message-image {
-            margin-top: 12px;
+            margin-top: 10px;  /* 图片与文本间距减少 */
             max-width: 320px;
             border-radius: 8px;
             border: 1px solid #eee;
@@ -82,7 +108,7 @@
         .message-meta {
             font-size: 12px;
             color: #888;
-            margin-top: 6px;
+            margin-top: 4px;  /* 元数据间距减少 */
             margin-left: 18px;
         }
 
@@ -98,16 +124,16 @@
         h1 {
             font-size: 1.6rem;
             font-weight: 600;
-            margin-bottom: 24px;
+            margin-bottom: 20px;  /* 标题下方间距减少 */
             color: #1e293b;
             text-align: center;
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #f1f5f9;
         }
 
         /* ID输入框 */
         .id-input {
-            margin-bottom: 20px;
+            margin-bottom: 18px;  /* 输入框间距减少 */
         }
         .id-input label {
             display: block;
@@ -132,8 +158,8 @@
 
         /* 图像上传 */
         .image-upload {
-            margin-bottom: 20px;
-            padding: 20px;
+            margin-bottom: 18px;  /* 上传区域间距减少 */
+            padding: 18px;
             border: 2px dashed #ddd;
             border-radius: 8px;
             text-align: center;
@@ -150,7 +176,7 @@
         }
         #image-preview {
             max-width: 100%;
-            margin-top: 12px;
+            margin-top: 10px;
             border-radius: 6px;
             display: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -163,10 +189,10 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             resize: none;
-            min-height: 120px;
-            margin-bottom: 16px;
+            min-height: 100px;  /* 输入框高度减少 */
+            margin-bottom: 14px;  /* 输入框与按钮间距减少 */
             font-size: 15px;
-            line-height: 1.6;
+            line-height: 1.5;
             transition: border-color 0.2s;
         }
         textarea:focus {
@@ -183,7 +209,7 @@
             background: #2563eb;
             color: white;
             border: none;
-            padding: 13px 20px;
+            padding: 12px 20px;  /* 按钮尺寸略减小 */
             border-radius: 8px;
             cursor: pointer;
             font-size: 15px;
@@ -200,7 +226,7 @@
 
         /* 状态提示 */
         .status {
-            margin-top: 12px;
+            margin-top: 10px;
             color: #64748b;
             font-size: 14px;
             text-align: center;
@@ -232,7 +258,7 @@
         <!-- 历史消息区域 -->
         <div class="history-container" id="history">
             <div class="message assistant-message">
-                <div class="message-content">您好！请输入您的ID、问题，或上传图片进行诊断。上传图片时会自动添加&lt;image&gt;标记。</div>
+                <div class="message-content">您好！请输入您的ID、问题</div>
             </div>
         </div>
 
@@ -261,6 +287,30 @@
     </div>
 
     <script>
+        // 优化的Markdown转HTML函数（压缩连续换行）
+        function markdownToHtml(markdown) {
+            // 核心：将3个及以上连续换行压缩为2个（仅保留1个空行视觉效果）
+            markdown = markdown.replace(/\n{3,}/g, '\n\n');
+            
+            // 转换三级标题
+            markdown = markdown.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+            
+            // 转换无序列表
+            let html = markdown.replace(/^- (.*?)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*?<\/li>)+/gs, '<ul>$&</ul>');
+            
+            // 转换分隔线
+            html = html.replace(/^---$/gm, '<hr>');
+            
+            // 转换加粗
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // 移除首尾多余空行
+            html = html.trim();
+            
+            return html;
+        }
+
         // 图像上传预览
         const uploadArea = document.getElementById('upload-area');
         const imageUpload = document.getElementById('image-upload');
@@ -376,7 +426,8 @@
                     const { done, value } = await reader.read();
                     if (done) break;
                     result += decoder.decode(value, { stream: true });
-                    contentDiv.textContent = result;
+                    // 转换Markdown为HTML并显示（自动压缩换行）
+                    contentDiv.innerHTML = markdownToHtml(result);
                     history.scrollTop = history.scrollHeight;
                 }
 
