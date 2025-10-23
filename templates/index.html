@@ -289,34 +289,42 @@
     <script>
         // 优化的Markdown转HTML函数（压缩连续换行）
         function markdownToHtml(markdown) {
-            // 1. 先压缩所有多余换行：
-            // - 3个及以上换行 → 1个换行（仅保留最小视觉间隔）
-            // - 2个换行 → 1个换行（避免空行）
+            // 1. 压缩多余换行：仅保留“1个换行”（用于分隔语法，如标题和列表），删除连续换行
             markdown = markdown.replace(/\n{2,}/g, '\n');
             
-            // 2. 处理Markdown语法前，先将“单个换行”转为<br>（避免浏览器解析为空行）
-            // 注意：必须在处理标题、列表等语法之前执行，防止破坏语法结构
+            // 2. 先处理“无序列表”（避免被后续<br>转换破坏）
+            // 匹配“- 内容”格式的列表项，用<li>包裹，不额外加<br>
+            markdown = markdown.replace(/^- (.*?)$/gm, '<li>$1</li>');
+            // 将连续<li>包裹成<ul>，前后不加<br>（消除列表外多余换行）
+            markdown = markdown.replace(/(<li>.*?<\/li>)+/gs, '<ul>$1</ul>');
+
+            // 3. 处理“表格”（以Markdown标准表格为例，避免单元格内换行）
+            // 匹配表格头部（如“| 列1 | 列2 |”）
+            markdown = markdown.replace(/^\|(.*?)\|$/gm, (match) => {
+                // 去掉首尾|，分割单元格，用<td>包裹
+                const cells = match.replace(/^\||\|$/g, '').split('|').map(cell => `<td>${cell.trim()}</td>`);
+                return `<tr>${cells.join('')}</tr>`;
+            });
+            // 匹配表格分隔线（如“| --- | --- |”），直接删除（避免显示多余分隔线）
+            markdown = markdown.replace(/^\|[\s-]+\|$/gm, '');
+            // 将连续<tr>包裹成<table>（加border确保样式，无多余换行）
+            markdown = markdown.replace(/(<tr>.*?<\/tr>)+/gs, '<table border="1" style="border-collapse:collapse;margin:8px 0;"><tbody>$1</tbody></table>');
+
+            // 4. 处理“标题”（仅在标题前后加1个<br>，避免过多空白）
+            markdown = markdown.replace(/^### (.*?)$/gm, '<br><h3>$1</h3>');
+            markdown = markdown.replace(/^## (.*?)$/gm, '<br><h2>$1</h2>');
+
+            // 5. 最后处理“内容内换行”：仅将“手动换行”转为<br>，语法换行已处理完成
             markdown = markdown.replace(/\n/g, '<br>');
-            
-            // 3. 转换三级标题（需用<br>分割，避免与内容粘连）
-            markdown = markdown.replace(/^### (.*?)<br>/gm, '<h3>$1</h3><br>');
-            markdown = markdown.replace(/^## (.*?)<br>/gm, '<h2>$1</h2><br>');
-            // 4. 转换无序列表（先匹配列表项，再包裹成<ul>）
-            // 匹配“- 内容<br>”格式的列表项，避免与普通文本混淆
-            let html = markdown.replace(/^- (.*?)<br>/gm, '<li>$1</li>');
-            // 将连续的<li>标签包裹成<ul>，并在前后加<br>控制间距
-            html = html.replace(/(<li>.*?<\/li>)+/gs, '<br><ul>$&</ul><br>');
-            
-            // 5. 转换分隔线（前后加<br>，避免与内容粘连）
-            html = html.replace(/^---<br>/gm, '<br><hr><br>');
-            
-            // 6. 转换加粗（不改变间距）
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // 7. 移除首尾多余的<br>和空格（避免顶部/底部空行）
-            html = html.trim().replace(/^<br>+|<br>+$/g, '');
-            
-            return html;
+
+            // 6. 处理“分隔线”和“加粗”（保持原有逻辑，不加多余换行）
+            markdown = markdown.replace(/^---$/gm, '<hr>');
+            markdown = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // 7. 移除首尾多余的<br>和空格（清理整体空白）
+            markdown = markdown.trim().replace(/^<br>+|<br>+$/g, '');
+
+            return markdown;
         }
 
         // 图像上传预览
