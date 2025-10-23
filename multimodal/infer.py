@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 初始化FastAPI应用
-app = FastAPI(title="Qwen-VL API服务（参考InternVL流式实现）")
+app = FastAPI(title="Qwen-VL API服务")
 config = Config()
 # --------------------------
 # 模型加载（Qwen-VL 4bit量化版）
