@@ -7,6 +7,7 @@ class Config():
         self.base_path = './images'
         self.multimodal_url = "http://localhost:8080/chat"
         self.main_url = "http://127.0.0.1:5000/generate"
+        self.proxy_ws_url = 'http://127.0.0.1:5000/ws'
         self.multimodal_port = 8080
         self.main_port = 5000
         self.web_port = 8051

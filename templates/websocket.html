@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>皮肤病诊断（WebSocket版）</title>
+    <style>
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .history { height: 500px; border: 1px solid #eee; border-radius: 8px; padding: 10px; overflow-y: auto; margin-bottom: 20px; }
+        .message { margin: 8px 0; padding: 10px; border-radius: 8px; max-width: 80%; }
+        .user { background: #0078d7; color: white; margin-left: auto; }
+        .assistant { background: #f0f0f0; }
+        .input-area { display: flex; flex-direction: column; gap: 10px; }
+        input, textarea, button { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        textarea { min-height: 80px; resize: vertical; }
+        button { background: #0078d7; color: white; border: none; cursor: pointer; }
+        .image-upload { border: 1px dashed #ddd; padding: 20px; text-align: center; cursor: pointer; }
+        #imagePreview { max-width: 200px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>皮肤病诊断助手</h1>
+        <div class="history" id="history"></div>
+        
+        <div class="input-area">
+            <input type="text" id="userId" placeholder="请输入用户ID（必填）">
+            <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                点击上传图片（点击上传）
+                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                <img id="imagePreview" alt="预览图">
+            </div>
+            <textarea id="question" placeholder="请输入问题..."></textarea>
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let imageBase64 = null;  // 存储图片的Base64编码
+
+        // 初始化WebSocket连接
+        function initWebSocket() {
+            // 连接当前页面的WebSocket后端（ws://当前域名/ws）
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+            ws = new WebSocket(wsUrl);
+
+            // 连接成功
+            ws.onopen = () => {
+                console.log('WebSocket连接已建立');
+                addMessage('系统', '已连接到服务，可以开始咨询', 'assistant');
+            };
+
+            // 接收服务端消息（流式响应）
+            ws.onmessage = (event) => {
+                const text = event.data;
+                // 实时更新最后一条助手消息（如果是新消息则创建，否则追加）
+                const history = document.getElementById('history');
+                const lastMsg = history.lastChild;
+                if (lastMsg && lastMsg.classList.contains('assistant')) {
+                    lastMsg.querySelector('div').textContent += text;
+                } else {
+                    addMessage('助手', text, 'assistant');
+                }
+            };
+
+            // 连接关闭
+            ws.onclose = (event) => {
+                console.log(`WebSocket关闭，代码: ${event.code}`);
+                addMessage('系统', `连接已关闭（${event.reason || '正常结束'}）`, 'assistant');
+                // 自动重连
+                setTimeout(initWebSocket, 3000);
+            };
+
+            // 连接错误
+            ws.onerror = (error) => {
+                console.error('WebSocket错误:', error);
+                addMessage('系统', '连接出错，请重试', 'assistant');
+            };
+        }
+
+        // 添加消息到历史记录
+        function addMessage(role, content, className) {
+            const history = document.getElementById('history');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.innerHTML = `<strong>${role}:</strong> <div>${content}</div>`;
+            history.appendChild(msgDiv);
+            // 滚动到底部
+            history.scrollTop = history.scrollHeight;
+        }
+
+        // 处理图片上传（转为Base64）
+        document.getElementById('imageInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                // 显示预览图
+                const preview = document.getElementById('imagePreview');
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+                // 提取Base64编码（去掉前缀 'data:image/png;base64,'）
+                imageBase64 = event.target.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 发送消息
+        function sendMessage() {
+            const userId = document.getElementById('userId').value.trim();
+            const question = document.getElementById('question').value.trim();
+
+            // 验证用户ID
+            if (!userId) {
+                alert('请输入用户ID');
+                return;
+            }
+
+            // 验证WebSocket连接
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('连接未建立，请稍候重试');
+                return;
+            }
+
+            // 构造消息（包含用户ID、问题、图片Base64）
+            const message = {
+                user_query: question,
+                ID: userId,
+                image_base64: imageBase64  // 没有图片则为null
+            };
+
+            // 添加用户消息到历史记录
+            addMessage('用户', question || '上传了图片', 'user');
+
+            // 发送消息（转为JSON字符串）
+            ws.send(JSON.stringify(message));
+
+            // 清空输入和图片
+            document.getElementById('question').value = '';
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            imageBase64 = null;
+        }
+
+        // 页面加载时初始化WebSocket
+        window.onload = initWebSocket;
+    </script>
+</body>
+</html>
