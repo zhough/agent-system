@@ -259,7 +259,7 @@ from pathlib import Path
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
-
+from typing import Optional
 
 config = Config()
 system_prompt = config.system_prompt.copy()
@@ -281,7 +281,7 @@ app.add_middleware(
 class QueryRequest(BaseModel):
     user_query: str  # 必须包含的参数
     ID : str = '0001'
-    image_base64 : str = None
+    image_base64 : Optional[str] = None
 
 # 定义响应数据模型（原有，未改动）
 class LLMResponse(BaseModel):
