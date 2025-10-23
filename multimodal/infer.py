@@ -8,7 +8,15 @@ from transformers import TextIteratorStreamer  # 关键：使用和InternVL一�
 from modelscope import Qwen3VLForConditionalGeneration,AutoProcessor
 from threading import Thread  # 参考InternVL的多线程处理
 import uvicorn
-from ..config import Config
+import sys
+import os
+
+current_file_path = os.path.abspath(__file__)
+multimodal_dir = os.path.dirname(current_file_path)
+home_dir = os.path.dirname(multimodal_dir)
+sys.path.append(home_dir)
+from config import Config
+
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
