@@ -8,7 +8,7 @@ from transformers import TextIteratorStreamer  # 关键：使用和InternVL一�
 from modelscope import Qwen3VLForConditionalGeneration,AutoProcessor
 from threading import Thread  # 参考InternVL的多线程处理
 import uvicorn
-from ..config import Config
+from ...config import Config
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
