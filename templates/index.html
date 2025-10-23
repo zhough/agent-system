@@ -297,7 +297,7 @@
             markdown = markdown.replace(/^- (.*?)$/gm, '<li>$1</li>');
             // 将连续<li>包裹成<ul>，前后不加<br>（消除列表外多余换行）
             markdown = markdown.replace(/(<li>.*?<\/li>)+/gs, '<ul>$1</ul>');
-
+            markdown = markdown.replace(/<li>(.*?)<br><\/li>/gs, '<li>$1</li>');
             // 3. 处理“表格”（以Markdown标准表格为例，避免单元格内换行）
             // 匹配表格头部（如“| 列1 | 列2 |”）
             markdown = markdown.replace(/^\|(.*?)\|$/gm, (match) => {
