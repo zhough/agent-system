@@ -61,6 +61,7 @@ def logging_decorator(func):
             return result
         except Exception as e:
             logging.error(f'函数{func.__name__}调用失败,错误原因:{str(e)}')
+            return json.dump({'state':'error'})
     return wrapper
 
 
