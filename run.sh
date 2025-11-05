@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# 1. 加载终端配置（确保conda和python可用）
-# 根据你的终端类型选择（bash用.bashrc，zsh用.zshrc）
+
 source ~/.bashrc
 
-# 2. 定义会话列表（命令不要加任何引号！）
-# 格式："会话名 conda环境 执行命令"
+
 sessions=(
     "main agent python main.py"
     "proxy agent python proxy.py"
