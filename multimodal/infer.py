@@ -4,9 +4,9 @@ import logging
 from PIL import Image
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
-from transformers import TextIteratorStreamer  # 关键：使用和InternVL一样的流式工具
+from transformers import TextIteratorStreamer
 from modelscope import Qwen3VLForConditionalGeneration,AutoProcessor
-from threading import Thread  # 参考InternVL的多线程处理
+from threading import Thread
 import uvicorn
 import sys
 import os
@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Qwen-VL API服务")
 config = Config()
 # --------------------------
-# 模型加载（Qwen-VL 4bit量化版）
+# 模型加载
 # --------------------------
-model_name = "unsloth/Qwen3-VL-4B-Instruct-bnb-4bit"
+model_name = "Qwen/Qwen3-VL-2B-Instruct"
 try:
     logger.info("开始加载Qwen-VL模型...")
     processor = AutoProcessor.from_pretrained(
@@ -37,7 +37,7 @@ try:
     model = Qwen3VLForConditionalGeneration.from_pretrained(
         model_name,
         dtype=torch.float16,
-        device_map="auto"
+        device_map="cuda:1"
     )
     if processor.tokenizer.pad_token is None:
         processor.tokenizer.pad_token = processor.tokenizer.eos_token
@@ -129,7 +129,7 @@ def generate_stream(question, images):
 @app.post("/chat")
 async def chat(
     question: str = Form(...),
-    session_id: str = Form("default"),  # 保留参数，兼容InternVL
+    session_id: str = Form("default"),
     image: UploadFile = File(None),
     image1: UploadFile = File(None)
 ):
@@ -137,7 +137,7 @@ async def chat(
     images = process_images([image, image1])
     logger.info(f"共处理 {len(images)} 张图像")
 
-    # 直接返回streamer的增量文本生成器（与InternVL逻辑一致）
+    # 直接返回streamer的增量文本生成器
     return StreamingResponse(generate_stream(question, images), media_type="text/plain")
 
 # --------------------------
