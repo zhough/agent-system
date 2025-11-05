@@ -37,7 +37,7 @@ try:
     model = Qwen3VLForConditionalGeneration.from_pretrained(
         model_name,
         dtype=torch.float16,
-        device_map="cuda"
+        device_map="auto"
     )
     if processor.tokenizer.pad_token is None:
         processor.tokenizer.pad_token = processor.tokenizer.eos_token
