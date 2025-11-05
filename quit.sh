@@ -1,7 +1,6 @@
 #!/bin/bash
 source ~/.bashrc
-
-screen -x -S main quit
-screen -x -S proxy quit
-screen -x -S multimodal quit
-screen -x -S web quit
+screen -X -S main quit
+screen -X -S proxy quit
+screen -X -S multimodal quit
+screen -X -S web quit
