@@ -7,6 +7,7 @@ sessions=(
     "proxy agent python proxy.py"
     "web agent python web_app.py"
     "multimodal multimodal python multimodal/infer.py"
+    “database agent python send_data.py"
 )
 
 # 3. 循环创建会话
