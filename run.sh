@@ -7,12 +7,12 @@ sessions=(
     "proxy agent python proxy.py"
     "web agent python web_app.py"
     "multimodal multimodal python multimodal/infer.py"
-    “database agent python send_data.py"
+    "database agent python send_data.py"
 )
 
 # 3. 循环创建会话
 for session in "${sessions[@]}"; do
-    read -r name env cmd <<< "$session"  # 直接解析，无引号
+    read -r name env cmd <<< "$session"
     
     echo "创建screen会话: $name"
     
