@@ -7,9 +7,10 @@ config = Config()
 
 # 路径映射：前缀 -> 目标端口
 PATH_TO_PORT = {
-    "/multimodal": config.multimodal_port,   # 示例：8080
-    "/api": config.main_port,                # 重点：main.py 端口（示例：5000）
-    "/webapp": config.web_port               # 示例：8501
+    "/multimodal": config.multimodal_port,   
+    "/api": config.main_port,
+    "/webapp": config.web_port,
+    '/database':config.database_port,
 }
 
 # -------------------------- 新增：处理 /api 路径的 WebSocket 请求 --------------------------

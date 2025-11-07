@@ -55,10 +55,10 @@ async def stream(
             logger.error(f"图像处理失败：{str(e)}")
             raise HTTPException(status_code=400, detail="图像处理失败，请重新上传")
 
-    # 构造payload：无图像时不包含image_base64字段（避免5000端口验证错误）
+
     payload = {
-        "user_query": user_query,  # 包含<image>前缀（如有图像）
-        "ID": user_id  # 传递用户输入的ID
+        "user_query": user_query,
+        "ID": user_id
     }
     if image_base64 is not None:
         payload["image_base64"] = image_base64
