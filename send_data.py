@@ -22,10 +22,13 @@ async def query_database(user_id: str = Form(..., description="用户ID（必填
     fact = query_memory(user_id=user_id,memory_type='FACT')
     preference = query_memory(user_id=user_id,memory_type='PREFERENCE')
     important = query_memory(user_id=user_id,memory_type='IMPORTANT')
+    path = query_memory(user_id=user_id,memory_type='PATH')
 
     res = {'fact': [f['content'] for f in fact],
            'preference': [p['content'] for p in preference],
-           'important': [i['content'] for i in important]}
+           'important': [i['content'] for i in important],
+           'path': [p['content'] for p in path]
+           }
     return res
 
 if __name__ == "__main__":
