@@ -23,7 +23,7 @@ async def query_database(user_id: str = Form(..., description="用户ID（必填
     preference = query_memory(user_id=user_id,memory_type='PREFERENCE')
     important = query_memory(user_id=user_id,memory_type='IMPORTANT')
     path = query_memory(user_id=user_id,memory_type='PATH')
-    pattern = r'\./images.*'
+    pattern = r'\/images.*'
     
     res = {'fact': [f['content'] for f in fact],
            'preference': [p['content'] for p in preference],
