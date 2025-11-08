@@ -88,10 +88,13 @@ async def handle_http(request):
     for path_prefix, port in PATH_TO_PORT.items():
         if request.path.startswith(path_prefix):
             target_port = port
-            target_path = request.path[len(path_prefix):] or "/"
+            # 仅对 /api 路径剥离前缀，因为WebSocket逻辑依赖它
+            if path_prefix == "/api":
+                target_path = request.path[len(path_prefix):] or "/"
+            else:
+                # 对 /web, /webapp 等路径，保持完整路径转发
+                target_path = request.path
             break
-    if not target_port:
-        return web.Response(status=404, text="路径未配置")
 
     # 构建目标 URL
     target_url = f"http://127.0.0.1:{target_port}{target_path}"
