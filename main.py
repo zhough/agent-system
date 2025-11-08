@@ -173,7 +173,7 @@ async def generate_chat_stream(request: QueryRequest) -> AsyncGenerator[str, Non
                                     full_tool_response = ""
                                     if request.image_base64 is not None:
                                         logging.info('接收到图像')
-                                        name = f'{uuid.uuid4().hex}.png'
+                                        name = f'{datetime.now()}.png'
                                         save_dir = os.path.join(config.base_path,ID)
                                         save_dir1 = Path(save_dir)
                                         save_dir1.mkdir(parents=True, exist_ok=True)
