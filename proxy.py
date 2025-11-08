@@ -1,6 +1,7 @@
 from aiohttp import web, ClientSession
 import asyncio
 from config import Config
+import re
 
 config = Config()
 
@@ -19,23 +20,25 @@ async def handle_vite_dev_server(request):
     """专门处理Vite开发服务器的请求"""
     target_url = f"{VITE_DEV_SERVER}{request.path}"
     
+    print(f"[Vite代理] 转发: {request.method} {request.path} -> {target_url}")
+    
     async with ClientSession() as session:
         try:
+            # 准备请求数据
+            request_data = await request.read() if request.method in ['POST', 'PUT', 'PATCH'] else None
+            
             async with session.request(
                 method=request.method,
                 url=target_url,
-                headers=request.headers,
-                data=await request.content.read() if request.method in ['POST', 'PUT', 'PATCH'] else None,
+                headers=dict(request.headers),
+                data=request_data,
                 allow_redirects=False
             ) as upstream_resp:
-                # 复制响应头，但移除一些可能冲突的头部
-                headers = dict(upstream_resp.headers)
-                headers.pop('Content-Encoding', None)
-                headers.pop('Transfer-Encoding', None)
                 
+                # 创建响应
                 response = web.StreamResponse(
                     status=upstream_resp.status,
-                    headers=headers
+                    headers=dict(upstream_resp.headers)
                 )
                 await response.prepare(request)
 
@@ -43,44 +46,54 @@ async def handle_vite_dev_server(request):
                 async for data in upstream_resp.content.iter_any():
                     if data:
                         await response.write(data)
-                        await response.drain()
                 return response
+                        
         except Exception as e:
             print(f"[Vite代理错误] 无法连接到Vite开发服务器: {e}")
-            return web.Response(status=502, text="开发服务器未启动")
+            return web.Response(
+                status=502, 
+                text=f"开发服务器连接失败: {str(e)}"
+            )
 
 async def handle_backend_service(request, path_prefix, port):
     """处理后端服务的HTTP请求"""
     target_path = request.path[len(path_prefix):] or "/"
     target_url = f"http://127.0.0.1:{port}{target_path}"
     
-    print(f"[代理] 转发 {request.method} {request.path} -> {target_url}")
+    print(f"[后端代理] 转发 {request.method} {request.path} -> {target_url}")
     
     async with ClientSession() as session:
+        request_data = await request.read()
+        
         async with session.request(
             method=request.method,
             url=target_url,
-            headers=request.headers,
-            data=await request.content.read(),
+            headers=dict(request.headers),
+            data=request_data,
             allow_redirects=False
         ) as upstream_resp:
             response = web.StreamResponse(
                 status=upstream_resp.status,
-                headers=upstream_resp.headers
+                headers=dict(upstream_resp.headers)
             )
             await response.prepare(request)
 
             async for data in upstream_resp.content.iter_any():
                 if data:
                     await response.write(data)
-                    await response.drain()
             return response
 
 async def handle_all(request):
     """统一入口：根据路径前缀分发请求"""
+    path = request.path
+    
+    # 特殊处理：如果是根路径，重定向到首页
+    if path == "/":
+        return web.HTTPFound('/index.html')
+    
     # 根据路径前缀分发到对应的服务
     for path_prefix, port in PATH_TO_PORT.items():
-        if request.path.startswith(path_prefix):
+        if path.startswith(path_prefix):
             return await handle_backend_service(request, path_prefix, port)
     
     # 没有匹配的路径前缀，转发到Vite开发服务器
@@ -88,6 +101,10 @@ async def handle_all(request):
 
 # 创建应用并配置路由
 app = web.Application()
+
+# 添加静态文件路由（可选，用于生产环境）
+# 这里我们主要依赖Vite开发服务器提供静态文件
+
 app.router.add_route("*", "/{tail:.*}", handle_all)
 
 if __name__ == "__main__":
@@ -96,5 +113,6 @@ if __name__ == "__main__":
     for path, port in PATH_TO_PORT.items():
         print(f"  {path} -> {port}")
     print(f"  其他路径 -> Vite开发服务器 (5002)")
+    print(f"  访问地址: http://0.0.0.0:{config.proxy_port}")
     
     web.run_app(app, host="0.0.0.0", port=config.proxy_port)
