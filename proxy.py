@@ -11,7 +11,7 @@ PATH_TO_PORT = {
     "/api": config.main_port,
     "/webapp": config.web_port,
     '/database':config.database_port,
-    '/web':5002
+    '/':5002
 }
 
 # -------------------------- 新增：处理 /api 路径的 WebSocket 请求 --------------------------
