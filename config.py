@@ -2,7 +2,7 @@ import torch
 class Config():
     def __init__(self):
         self.vector_db_path = "./full_turn_rag_db"  # 向量库本地存储路径
-        self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda:2' if torch.cuda.is_available() else 'cpu'
         self.max_history_length = 30
         self.base_path = './images'
         self.multimodal_url = "http://localhost:8080/chat"
