@@ -5,7 +5,7 @@ import json
 from database.memory_database import write_memory,delete_memory,query_memory
 from config import Config
 from fastapi.middleware.cors import CORSMiddleware
-
+import re
 app = FastAPI(title='数据库查询')
 app.add_middleware(
     CORSMiddleware,
@@ -23,11 +23,12 @@ async def query_database(user_id: str = Form(..., description="用户ID（必填
     preference = query_memory(user_id=user_id,memory_type='PREFERENCE')
     important = query_memory(user_id=user_id,memory_type='IMPORTANT')
     path = query_memory(user_id=user_id,memory_type='PATH')
-
+    pattern = r'\./images.*'
+    
     res = {'fact': [f['content'] for f in fact],
            'preference': [p['content'] for p in preference],
            'important': [i['content'] for i in important],
-           'path': [p['content'] for p in path]
+           'path': [re.search(pattern, p['content']).group() for p in path]
            }
     return res
 
