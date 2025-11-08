@@ -1,6 +1,7 @@
 from aiohttp import web, ClientSession
 import asyncio
 from config import Config
+import mimetypes
 
 config = Config()
 
@@ -34,29 +35,49 @@ async def handle_vite_dev_server(request):
                 allow_redirects=False
             ) as upstream_resp:
                 
-                # 对于 HTML 页面，确保正确处理
+                # 获取内容类型
                 content_type = upstream_resp.headers.get('Content-Type', '')
-                if 'text/html' in content_type:
-                    # 复制响应头，但移除可能导致循环的头部
-                    headers = dict(upstream_resp.headers)
-                    headers.pop('Location', None)
-                    
-                    response = web.StreamResponse(
+                
+                # 处理静态资源 - 确保正确的内容类型
+                if request.path.endswith('.css'):
+                    content_type = 'text/css; charset=utf-8'
+                elif request.path.endswith('.js'):
+                    content_type = 'application/javascript; charset=utf-8'
+                elif request.path.endswith('.png'):
+                    content_type = 'image/png'
+                elif request.path.endswith('.jpg') or request.path.endswith('.jpeg'):
+                    content_type = 'image/jpeg'
+                elif request.path.endswith('.svg'):
+                    content_type = 'image/svg+xml'
+                
+                # 复制响应头
+                headers = dict(upstream_resp.headers)
+                
+                # 更新内容类型
+                if content_type:
+                    headers['Content-Type'] = content_type
+                
+                # 确保有正确的内容长度
+                if 'Content-Length' not in headers:
+                    content = await upstream_resp.read()
+                    headers['Content-Length'] = str(len(content))
+                    response = web.Response(
+                        body=content,
                         status=upstream_resp.status,
                         headers=headers
                     )
                 else:
                     response = web.StreamResponse(
                         status=upstream_resp.status,
-                        headers=dict(upstream_resp.headers)
+                        headers=headers
                     )
-                
-                await response.prepare(request)
-
-                # 流式转发内容
-                async for data in upstream_resp.content.iter_any():
-                    if data:
-                        await response.write(data)
+                    await response.prepare(request)
+                    
+                    # 流式转发内容
+                    async for data in upstream_resp.content.iter_any():
+                        if data:
+                            await response.write(data)
+                            
                 return response
                         
         except Exception as e:
@@ -98,9 +119,6 @@ async def handle_all(request):
     """统一入口：根据路径前缀分发请求"""
     path = request.path
     
-    # 移除重定向逻辑，这可能是导致循环刷新的原因
-    # 直接根据路径前缀分发请求
-    
     # 根据路径前缀分发到对应的服务
     for path_prefix, port in PATH_TO_PORT.items():
         if path.startswith(path_prefix):
@@ -111,10 +129,6 @@ async def handle_all(request):
 
 # 创建应用并配置路由
 app = web.Application()
-
-# 添加静态文件路由（可选，用于生产环境）
-# 这里我们主要依赖Vite开发服务器提供静态文件
-
 app.router.add_route("*", "/{tail:.*}", handle_all)
 
 if __name__ == "__main__":
