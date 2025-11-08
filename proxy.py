@@ -1,7 +1,6 @@
 from aiohttp import web, ClientSession
 import asyncio
 from config import Config
-import re
 
 config = Config()
 
@@ -35,11 +34,23 @@ async def handle_vite_dev_server(request):
                 allow_redirects=False
             ) as upstream_resp:
                 
-                # 创建响应
-                response = web.StreamResponse(
-                    status=upstream_resp.status,
-                    headers=dict(upstream_resp.headers)
-                )
+                # 对于 HTML 页面，确保正确处理
+                content_type = upstream_resp.headers.get('Content-Type', '')
+                if 'text/html' in content_type:
+                    # 复制响应头，但移除可能导致循环的头部
+                    headers = dict(upstream_resp.headers)
+                    headers.pop('Location', None)
+                    
+                    response = web.StreamResponse(
+                        status=upstream_resp.status,
+                        headers=headers
+                    )
+                else:
+                    response = web.StreamResponse(
+                        status=upstream_resp.status,
+                        headers=dict(upstream_resp.headers)
+                    )
+                
                 await response.prepare(request)
 
                 # 流式转发内容
@@ -87,9 +98,8 @@ async def handle_all(request):
     """统一入口：根据路径前缀分发请求"""
     path = request.path
     
-    # 特殊处理：如果是根路径，重定向到首页
-    if path == "/":
-        return web.HTTPFound('/index.html')
+    # 移除重定向逻辑，这可能是导致循环刷新的原因
+    # 直接根据路径前缀分发请求
     
     # 根据路径前缀分发到对应的服务
     for path_prefix, port in PATH_TO_PORT.items():
