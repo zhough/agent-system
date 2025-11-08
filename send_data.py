@@ -4,10 +4,18 @@ import asyncio
 import json
 from database.memory_database import write_memory,delete_memory,query_memory
 from config import Config
-
-config = Config()
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title='数据库查询')
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有来源，生产环境改为前端实际域名（如 "http://localhost:8080"）
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有 HTTP 方法
+    allow_headers=["*"],  # 允许所有请求头
+)
+
+config = Config()
 
 @app.post('/query')
 async def query_database(user_id: str = Form(..., description="用户ID（必填）")):
