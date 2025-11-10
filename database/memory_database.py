@@ -43,7 +43,7 @@ def query_memory(user_id,memory_type=None):
         query = query.filter(Memory.memory_type == memory_type)
     results = query.all()
     return [{"memory_id": mem.memory_id,"content": mem.content, "type": mem.memory_type,
-             'update_timestamp':mem.update_timestamp.isoformat()} for mem in results]
+             'update_timestamp':datetime.fromisoformat(mem.update_timestamp.isoformat()).strftime("%Y-%m-%d %H:%M:%S")} for mem in results]
 
 @logging_decorator
 def delete_memory(memory_id,user_id):

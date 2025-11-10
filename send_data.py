@@ -6,6 +6,8 @@ from database.memory_database import write_memory,delete_memory,query_memory
 from config import Config
 from fastapi.middleware.cors import CORSMiddleware
 import re
+from datetime import datetime
+
 app = FastAPI(title='数据库查询')
 app.add_middleware(
     CORSMiddleware,
@@ -29,7 +31,8 @@ async def query_database(user_id: str = Form(..., description="用户ID（必填
         'fact': fact,
         'diagnosis': diagnosis,
         'important': important,
-        'path': [re.search(pattern, p['content']).group(1) if re.search(pattern, p['content']) else '' for p in path]
+        'path': [{'url':re.search(pattern, p['content']).group(1) if re.search(pattern, p['content']) else '',
+                  'time': p['update_timestamp']} for p in path]
     }
     return res
 
