@@ -3,9 +3,11 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import logging
 from config import Config
 import os   
-from modelscope.hub.snapshot_download import snapshot_download
-from huggingface_hub import snapshot_download as hf_snapshot_download
 
+from huggingface_hub import snapshot_download as hf_snapshot_download
+import certifi
+os.environ['SSL_CERT_FILE'] = certifi.where()
+from modelscope.hub.snapshot_download import snapshot_download
 config = Config()
 #os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
@@ -20,7 +22,7 @@ if not os.path.exists(local_model_path):
     local_model_path = snapshot_download(
         model_id=modelscope_model_id,
         cache_dir=local_model_dir,
-        revision="master"
+        revision="master",
     )
     logging.info("模型下载完成！")
 else:

@@ -20,16 +20,22 @@ config = Config()
 @app.post('/query')
 async def query_database(user_id: str = Form(..., description="用户ID（必填）")):
     fact = query_memory(user_id=user_id,memory_type='FACT')
-    preference = query_memory(user_id=user_id,memory_type='PREFERENCE')
+    diagnosis = query_memory(user_id=user_id,memory_type='DIAGNOSIS')
     important = query_memory(user_id=user_id,memory_type='IMPORTANT')
     path = query_memory(user_id=user_id,memory_type='PATH')
     pattern = r'\/images.*'
     
-    res = {'fact': [f['content'] for f in fact],
-           'preference': [p['content'] for p in preference],
-           'important': [i['content'] for i in important],
-           'path': [re.search(pattern, p['content']).group() for p in path]
-           }
+    # res = {'fact': [f['content'] for f in fact],
+    #        'preference': [p['content'] for p in preference],
+    #        'important': [i['content'] for i in important],
+    #        'path': [re.search(pattern, p['content']).group() for p in path]
+    #        }
+    res = {
+        'fact': fact,
+        'diagnosis': diagnosis,
+        'important': important,
+        'path': [re.search(pattern, p['content']).group() for p in path]
+    }
     return res
 
 if __name__ == "__main__":

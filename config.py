@@ -2,7 +2,7 @@ import torch
 class Config():
     def __init__(self):
         self.vector_db_path = "./full_turn_rag_db"  # 向量库本地存储路径
-        self.device = 'cuda:2' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.max_history_length = 30
         self.base_path = './images'
         self.multimodal_url = "http://localhost:8080/chat"
@@ -16,7 +16,7 @@ class Config():
         self.system_prompt = {"role": "system", "content": "1. 你是皮肤病诊断助手，普通对话直接回答，需工具时调用函数，一次可以调用多个工具。"+\
      "2. 用户传入图像时调用多模态大模型工具"+\
      "3. 首轮对话先读取用户的个人信息"+\
-     '4. 用户进行皮肤病相关诊断前先查一下他的过往的诊断记录，诊断后为他生成一个病历并保存下来'+\
+     '4. 用户进行皮肤病相关诊断前先查一下他的过往的诊断记录，诊断后为他生成一个病历并保存在数据库的DIAGNOSIS字段中'+\
         '5. 将所有皮肤病相关的信息比如过敏史,症状,以及多模态的诊断结果整理后保存下来'+\
         '6. 必须及时更新用户信息,比如记录中有冲突或者过时的记录就及时更新或者删除'+\
         '7. 信息冲突时若无法判断去留可以向用户确认'+\
